@@ -10,6 +10,14 @@ export class Database {
     const [tables] = await this.execute(
       "SELECT TABLE_NAME, ENGINE FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME IN ('jugadores','videojuegos','puntuaciones','api_solicitudes','usuarios','Rol')",
     );
+    // if (tables.length !== 6 || tables.some(t => t.ENGINE !== 'InnoDB')) throw new Error('Faltan tablas o no usan InnoDB; revisa DB_NAME y las migraciones 001 y 003.');
+    // await this.execute('SELECT ID, Nombre, Correo, Contrasena, ID_Rol FROM usuarios LIMIT 0');
+    // const [roles] = await this.execute("SELECT Nombre FROM roles WHERE Nombre IN ('Superadministrador', 'Administrador')");
+    // if (roles.length !== 2) throw new Error('Faltan los dos roles únicos del catálogo roles.');
+    // await this.execute('SELECT ID, nombre, gamertag, correo, fecha_registro FROM jugadores LIMIT 0');
+    // await this.execute('SELECT ID, nombre, genero FROM videojuegos LIMIT 0');
+    // await this.execute('SELECT ID, ID_jugador, ID_videojuego, puntuacion, fecha FROM puntuaciones LIMIT 0');
+    // await this.execute('SELECT usuario, operacion, clave, hash_solicitud, codigo_http, cuerpo_respuesta FROM api_solicitudes LIMIT 0');
   }
   async transaction(work) {
     const connection = await this.pool.getConnection();

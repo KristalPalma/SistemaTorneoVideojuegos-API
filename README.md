@@ -196,15 +196,7 @@ Para una nueva intención de registrar una puntuación, React debe generar `cryp
 
 Los contratos están documentados en `src/contracts/repositories.js`. Se utiliza JSDoc para documentar JavaScript.
 
-## 9. Pruebas y evidencia
-
-```bash
-npm test
-```
-
-Se verificaron **18 pruebas unitarias y HTTP**. HTTP levanta Express real en puerto efímero, pero utiliza repositorios sustitutos. Comprueban consultas públicas, la matriz de roles en POST/PATCH/DELETE, alta exclusiva de Administradores, rechazo de ID_Rol del cliente, ausencia de hashes en respuestas, autenticación desde repositorio, validaciones, errores, CORS e idempotencia. No prueban el SQL ni concurrencia contra MySQL real.
-
-## 10. Security Note
+## 9. Security Note
 
 HTTP Basic codifica credenciales, no las cifra. Esta configuración escucha en loopback para desarrollo local. Antes de exponerla fuera de localhost, configurar HTTPS y revisar el mecanismo de acceso. CORS no sustituye autenticación ni autorización. Los permisos se comprueban en el backend por rol. El frontend puede ocultar botones, pero eso no sustituye los controles del servidor. Correo y contraseña usados para autenticarse no se aceptan como una declaración de rol, pues el rol se obtiene de MySQL.
 

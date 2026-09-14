@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 export function loadConfig(env = process.env) {
   const required = name => {
     const value = env[name];
-    if (typeof value !== 'string' || !value.trim() || value === null) throw new Error(`Configura ${name} en .env.`);
+    if (typeof value !== 'string' || !value.trim() || value === 'REEMPLAZAR') throw new Error(`Configura ${name} en .env.`);
     return value;
   };
   const integer = (name, fallback, max = 65535) => {

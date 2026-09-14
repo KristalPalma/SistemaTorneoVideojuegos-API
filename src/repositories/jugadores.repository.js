@@ -1,4 +1,5 @@
 import { notFound } from '../domain/errors.js';
+const SELECT = 'SELECT ID, nombre, gamertag, correo, fecha_registro FROM jugadores';
 const FIELDS = Object.freeze(["nombre", "gamertag", "correo"]);
 export class JugadoresRepository {
   constructor(database, clock) { this.database = database; this.clock = clock; }

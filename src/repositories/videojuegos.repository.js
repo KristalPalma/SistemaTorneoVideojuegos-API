@@ -1,21 +1,20 @@
 import { notFound } from '../domain/errors.js';
-const SELECT = 'SELECT ID, nombre, genero FROM videojuegos';
-const FIELDS = Object.freeze(["nombre", "genero"]);
+const SELECT = `SELECT v.ID, v.nombre, v.ID_genero, g.Nombre AS genero
+  FROM videojuegos v JOIN generos g ON g.ID = v.ID_genero`;
+const FIELDS = Object.freeze(['nombre', 'ID_genero']);
 export class VideojuegosRepository {
-  constructor(database, clock) { this.database = database; this.clock = clock; }
+  constructor(database) { this.database = database; }
   async list(options) {
-    const conditions = [], values = [];
-    const where = conditions.length ? ` WHERE ${conditions.join(' AND ')}` : '';
-    const [rows] = await this.database.execute(`${SELECT}${where} ORDER BY ID DESC LIMIT ? OFFSET ?`, [...values, options.limit, options.offset]);
+    const [rows] = await this.database.execute(`${SELECT} ORDER BY v.ID DESC LIMIT ? OFFSET ?`, [options.limit, options.offset]);
     return rows;
   }
   async get(id, executor = this.database) {
-    const [rows] = await executor.execute(`${SELECT} WHERE ID = ?`, [id]);
+    const [rows] = await executor.execute(`${SELECT} WHERE v.ID = ?`, [id]);
     if (!rows.length) notFound();
     return rows[0];
   }
   async createIn(connection, input) {
-    const [result] = await connection.execute('INSERT INTO videojuegos (nombre, genero) VALUES (?, ?)', [input.nombre, input.genero]);
+    const [result] = await connection.execute('INSERT INTO videojuegos (nombre, ID_genero) VALUES (?, ?)', [input.nombre, input.ID_genero]);
     return this.get(result.insertId, connection);
   }
   create(input) { return this.database.transaction(c => this.createIn(c, input)); }

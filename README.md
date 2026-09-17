@@ -1,8 +1,8 @@
-# API de torneo · Express + JavaScript
+# API de torneo - Express + JavaScript
 
 Implementación del backend para jugadores, videojuegos, puntuaciones, clasificación y estadísticas. Puerto predeterminado: **3000**, host `127.0.0.1`.
 
-Esta API contiene 21 endpoints de negocio, GET, POST y DELETE para Jugadores, Videojuegos y Puntuaciones, POST /api/usuarios para crear Administradores, autenticación HTTP Basic contra MySQL, salud del servicio, validación, consultas parametrizadas y protección persistente contra reintentos de creación de puntuaciones.
+Esta API contiene endpoints GET, POST, PATCH y DELETE para Jugadores, Videojuegos y Puntuaciones, POST /api/usuarios para crear Administradores, autenticación HTTP Basic contra MySQL, salud del servicio, validación, consultas parametrizadas y protección persistente contra reintentos de creación de puntuaciones.
 
 ## 1. Instalar
 
@@ -48,7 +48,7 @@ Sin observar cambios:
 npm start
 ```
 
-El servidor valida configuración, versión, presencia de tablas e InnoDB antes de escuchar. Si falta la migración o hay un error de conexión, termina con código 1, no simula conexión satisfactoria.
+El servidor valida la configuración, la versión de MySQL y el contrato de géneros (columnas y FK) antes de escuchar. Si falta la migración o hay un error de conexión, termina con código 1, no simula conexión satisfactoria.
 
 Abrir:
 
@@ -64,33 +64,34 @@ Respuesta:
 
 ## 4. Endpoints y contratos
 
-Los GET de jugadores, videojuegos, puntuaciones, clasificación y estadísticas son públicos. POST/PATCH/DELETE requieren el rol correspondiente.
+Los GET de jugadores, videojuegos, géneros, puntuaciones, clasificación y estadísticas son públicos. POST/PATCH/DELETE requieren el rol correspondiente.
 
 | Método | Ruta | Resultado / RF |
 | --- | --- | --- |
-| POST | `/api/jugadores` | Crear jugador, 201 satisfactorio · RF01 |
-| GET | `/api/jugadores?buscar=Shadow&page=1&limit=20` | Listar/buscar por nombre OR gamertag · RF04/RF05/RF07 |
+| POST | `/api/jugadores` | Crear jugador, 201 satisfactorio - RF01 |
+| GET | `/api/jugadores?buscar=Shadow&page=1&limit=20` | Listar/buscar por nombre OR gamertag - RF04/RF05/RF07 |
 | GET | `/api/jugadores/:id` | Consultar jugador |
 | PATCH | `/api/jugadores/:id` | Actualizar campos enviados |
 | DELETE | `/api/jugadores/:id` | Eliminar, 204 satisfactorio o 409 si tiene puntuaciones |
-| POST | `/api/videojuegos` | Crear videojuego, 201 satisfactorio · RF02 |
+| POST | `/api/videojuegos` | Crear videojuego, 201 satisfactorio - RF02 |
 | GET | `/api/videojuegos?page=1&limit=20` | Catálogo para RF05 |
 | GET | `/api/videojuegos/:id` | Consultar videojuego |
 | PATCH | `/api/videojuegos/:id` | Actualizar campos enviados |
 | DELETE | `/api/videojuegos/:id` | Eliminar, 204 satisfactorio o 409 si tiene puntuaciones |
-| POST | `/api/puntuaciones` | Crear con Idempotency-Key, 201 satisfactorio · RF03/RF05 |
+| POST | `/api/puntuaciones` | Crear con Idempotency-Key, 201 satisfactorio - RF03/RF05 |
 | GET | `/api/puntuaciones?ID_jugador=1&ID_videojuego=1` | Historial con filtros opcionales y paginación |
 | GET | `/api/puntuaciones/:id` | Consultar puntuación |
 | PATCH | `/api/puntuaciones/:id` | Modificar puntuación y/o asociados |
 | DELETE | `/api/puntuaciones/:id` | Eliminar, 204 satisfactorio |
-| GET | `/api/clasificacion?ID_videojuego=1` | Clasificación del videojuego obligatorio · RF06 |
-| GET | `/api/estadisticas?ID_videojuego=1` | Estadísticas globales si no hay filtro · RF08 |
+| GET | `/api/clasificacion?ID_videojuego=1` | Filtro opcional, sin filtro: mejores puntuaciones por jugador y videojuego - RF06 |
+| GET | `/api/generos?page=1&limit=20` | Catálogo público de géneros autorizados |
+| GET | `/api/estadisticas?ID_videojuego=1` | Estadísticas globales si no hay filtro - RF08 |
 | POST | `/api/usuarios` | Crear un Administrador, solo Superadministrador |
 | GET | `/api/auth/me` | Obtener ID, nombre, correo y rol de la cuenta autenticada |
 | GET | `/api/health` | Estado del proceso, público |
 | GET | `/api/health/ready` | Comprobar MySQL, solo Superadministrador |
 
-Listados: `page` predeterminado 1, máximo 10000, `limit` predeterminado 20, máximo 100. Orden `ID DESC`, excepto clasificación. Búsqueda parcial: `%`, `_` y `!` escritos por el usuario se tratan como caracteres literales, no SQL.
+Listados: `page` predeterminado 1, máximo 10000, `limit` predeterminado 20, máximo 100. Orden `ID DESC`, excepto clasificación y el catálogo de géneros (Nombre, ID). Búsqueda parcial: `%`, `_` y `!` escritos por el usuario se tratan como caracteres literales, no SQL.
 
 El JSON conserva los nombres del esquema: `ID`, `ID_jugador`, `ID_videojuego`, `fecha_registro`, etc.
 
@@ -134,7 +135,7 @@ POST `/api/jugadores`:
 POST `/api/videojuegos`:
 
 ```json
-{ "nombre": "nombre", "genero": "genero" }
+{ "nombre": "nombre", "ID_genero": 1 }
 ```
 
 POST `/api/puntuaciones`, usando los IDs REALES devueltos:
@@ -155,13 +156,13 @@ Incluye solamente los campos que quieras cambiar. No admite ID de registro, fech
 
 ## 6. Reglas implementadas
 
-- Obligatorios y longitudes iguales al esquema. Se recortan espacios en textos.
+- Obligatorios y longitudes del contrato de la API. Se recortan espacios en textos. El correo se valida por regex en altas y ediciones. Videojuegos requiere ID_genero existente en generos y no acepta el campo genero como texto.
 - Gamertag, correo y nombre de videojuego únicos por sus restricciones MySQL.
 - Puntuaciones recibe enteros. No se convierte strings numéricos. Referencias garantizadas por claves foráneas, también al editar.
 - Eliminar jugadores o videojuegos con puntuaciones devuelve 409, no hay cascada.
 - Ediciones serializadas con transacciones y bloqueo de fila. Si dos solicitudes editan el mismo campo, prevalece la que se ejecuta después, no se implementa control de versión optimista.
 - Fechas automáticas al crear y conservadas al editar. Modificar una puntuación cambia el ranking según su valor actual y su fecha original.
-- Clasificación: exige un videojuego existente. Selecciona la mayor puntuación por jugador y, entre máximos iguales del mismo jugador, el registro más antiguo. Orden final: puntaje descendente, fecha ascendente, ID ascendente. Posiciones consecutivas 1,2,3, se calculan antes de paginar. Los registros históricos con fecha NULL se colocan después de los que sí tienen fecha para el mismo puntaje.
+- Clasificación: ID_videojuego es opcional. Con filtro exige un juego existent, sin filtro consulta todos los juegos con puntuaciones. Selecciona la mayor puntuación por pareja jugador/videojuego y, entre máximos iguales, el registro más antiguo. Reinicia posiciones por juego y ordena cada ranking por puntaje descendente, fecha ascendente e ID ascendente. La lista final se ordena por ID_videojuego y posición, y se pagina globalmente. Las fechas NULL se colocan después de las conocidas al empatar.
 - Estadísticas globales: total de las tablas y AVG de todas las puntuaciones. Filtradas: participantes distintos de ese juego, un videojuego, cantidad de registros y su promedio. Sin puntuaciones: promedio null. Un videojuego inexistente produce 404, un juego existente sin registros devuelve cero participantes, un videojuego y cero puntuaciones.
 
 ### Fechas y zona horaria

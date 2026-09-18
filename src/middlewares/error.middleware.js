@@ -1,8 +1,8 @@
 import { DomainError } from '../domain/errors.js';
-const domainStatus = { VALIDATION_ERROR: 400, UNAUTHORIZED: 401, FORBIDDEN: 403, NOT_FOUND: 404, CONFLICT: 409 };
+const domainStatus = { VALIDATION_ERROR: 400, UNAUTHORIZED: 401, FORBIDDEN: 403, NOT_FOUND: 404, CONFLICT: 409, INVALID_REFERENCE: 422 };
 const databaseErrors = {
-  ER_DUP_ENTRY: [409, 'DUPLICATE', 'El gamertag o nombre de videojuego ya existe.'],
-  ER_NO_REFERENCED_ROW_2: [422, 'INVALID_REFERENCE', 'El jugador o videojuego indicado no existe.'],
+  ER_DUP_ENTRY: [409, 'DUPLICATE', 'El gamertag, correo o nombre de videojuego ya existe.'],
+  ER_NO_REFERENCED_ROW_2: [422, 'INVALID_REFERENCE', 'El jugador, videojuego o género indicado no existe.'],
   ER_ROW_IS_REFERENCED_2: [409, 'RELATED_RECORDS', 'No se puede eliminar: existen puntuaciones relacionadas.'],
   ER_CHECK_CONSTRAINT_VIOLATED: [400, 'INVALID_SCORE', 'Los datos incumplen una restricción de la base de datos.'],
   ER_LOCK_DEADLOCK: [503, 'RETRY_LATER', 'Conflicto temporal. Reintenta la solicitud con la misma clave.'],

@@ -9,6 +9,7 @@ export function createApiRouter(services, authenticate) {
   router.get('/auth/me', authenticate, (req, res) => res.json({ data: req.auth }));
   router.use('/jugadores', createJugadoresRouter(services.jugadores, authenticate));
   router.use('/videojuegos', createVideojuegosRouter(services.videojuegos, authenticate));
+  router.get('/generos', async (req, res) => res.json(await services.generos.list(query(req.query))));
   router.use('/puntuaciones', createPuntuacionesRouter(services.puntuaciones, authenticate));
   router.get('/clasificacion', async (req, res) => res.json(await services.clasificacion.list(query(req.query, ['ID_videojuego']))));
   router.get('/estadisticas', async (req, res) => res.json({ data: await services.estadisticas.get(query(req.query, ['ID_videojuego'], false)) }));
